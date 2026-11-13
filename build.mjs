@@ -7,9 +7,9 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 
 const styles=read('src/styles.css')
-  .replace('url(__OD_REGULAR__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Regular.woff2')).toString('base64')+"')")
-  .replace('url(__OD_BOLD__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Bold.woff2')).toString('base64')+"')")
-  .replace('url(__OD_ITALIC__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Italic.woff2')).toString('base64')+"')");
+  .replace('url(__OD_REGULAR__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Regular.woff2.b64'),'utf8').replace(/\s+/g,'')+"')")
+  .replace('url(__OD_BOLD__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Bold.woff2.b64'),'utf8').replace(/\s+/g,'')+"')")
+  .replace('url(__OD_ITALIC__)',"url('data:font/woff2;base64,"+fs.readFileSync(path.join(root,'fonts/OpenDyslexic-Italic.woff2.b64'),'utf8').replace(/\s+/g,'')+"')");
 if(styles.includes('url(__OD_'))throw Error('Font placeholder left unreplaced');
 
 const packs=fs.readdirSync(path.join(root,'lessons')).filter(f=>f.endsWith('.json')).sort()
