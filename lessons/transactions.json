@@ -1,0 +1,345 @@
+{
+ "id": "transactions-v1",
+ "title": "Transactions: when is interleaving safe?",
+ "reviewed": true,
+ "mode": "Reviewed offline sample",
+ "version": "1.0.0",
+ "summary": "ACID in plain words, what makes two operations conflict, and the precedence-graph test for conflict serializability. For learners who can recite ACID but not use it.",
+ "minutes": 30,
+ "lab": {
+  "type": "transactions",
+  "intro": "Build an interleaved schedule of reads and writes, predict whether it can be reordered into a one-after-another execution, then inspect the conflicts and the precedence graph.",
+  "assumptions": "Operations on the same data item by the same transaction stay in the order you give them. A conflict needs two different transactions, the same item and at least one write; read-read pairs never conflict. The test is conflict serializability: sufficient but stricter than every notion of correctness. Locking, deadlocks and isolation levels are deliberately out of scope."
+ },
+ "pages": [
+  {
+   "page": 1,
+   "text": "A transaction is a group of reads and writes treated as one unit of work. Atomicity means all of its writes take effect or none do. Consistency means each committed transaction moves the data from one valid state to another. Isolation means concurrent transactions do not observe each other's unfinished work. Durability means committed changes survive a crash. These four guarantees are abbreviated ACID."
+  },
+  {
+   "page": 2,
+   "text": "Two operations conflict when they belong to different transactions, touch the same data item, at least one of them is a write, and their order can change the result. Two reads of the same item do not conflict. Reordering conflicting operations can produce a different final state or expose uncommitted values, so the order of conflicts is what an interleaved schedule must preserve."
+  },
+  {
+   "page": 3,
+   "text": "A schedule is conflict-serializable when its effect equals some serial execution of the same transactions, one after another. To test it, build a precedence graph with one node per transaction: draw an edge from Ti to Tj when an operation of Ti conflicts with a later operation of Tj. If the graph contains no cycle, the schedule is conflict-serializable, and a topological order of the graph is an equivalent serial order. A cycle means no equivalent serial order exists under this test."
+  }
+ ],
+ "concepts": [
+  {
+   "id": "acid",
+   "title": "The four guarantees",
+   "page": 1,
+   "quote": "Atomicity means all of its writes take effect or none do. Consistency means each committed transaction moves the data from one valid state to another. Isolation means concurrent transactions do not observe each other's unfinished work. Durability means committed changes survive a crash.",
+   "plain": "A transaction is all-or-nothing (atomicity), keeps the data valid (consistency), hides its half-done work (isolation), and stays saved after a crash (durability). Four promises, one acronym: ACID.",
+   "example": "A money transfer debits A and credits B. Atomicity says a crash between the two steps rolls both back; durability says a crash after commit keeps both."
+  },
+  {
+   "id": "conflicts",
+   "title": "What makes operations conflict",
+   "page": 2,
+   "quote": "Two operations conflict when they belong to different transactions, touch the same data item, at least one of them is a write, and their order can change the result. Two reads of the same item do not conflict.",
+   "plain": "Two operations clash only if they come from different transactions, touch the same item, and at least one writes. Two people reading the same page is fine; one reading while another rewrites it is not.",
+   "example": "T1 reads X, then T2 writes X: swapping their order can change what T1 sees. T1 reads X and T2 reads X: swapping changes nothing."
+  },
+  {
+   "id": "serializability",
+   "title": "The precedence-graph test",
+   "page": 3,
+   "quote": "draw an edge from Ti to Tj when an operation of Ti conflicts with a later operation of Tj. If the graph contains no cycle, the schedule is conflict-serializable, and a topological order of the graph is an equivalent serial order. A cycle means no equivalent serial order exists under this test.",
+   "plain": "Draw an arrow for every conflict, pointing from whoever went first. If the arrows never loop back, the interleaving was as good as running the transactions one after another, and following the arrows gives you that order.",
+   "example": "T1 reads X then T2 writes X (arrow T1 to T2); T2 writes Y then T1 reads Y (arrow T2 to T1). The arrows loop, so this interleaving equals no serial order. Build it in the lab."
+  }
+ ],
+ "pre": [
+  {
+   "id": "pre1",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "Atomicity promises that a transaction's writes:",
+   "options": [
+    "All take effect, or none do",
+    "Take effect one per second",
+    "Become visible before commit"
+   ],
+   "correct": 0,
+   "why": "A transaction is one unit of work: all of its writes or none."
+  },
+  {
+   "id": "pre2",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "Durability means committed changes:",
+   "options": [
+    "Survive a crash",
+    "Can always be rolled back later",
+    "Stay invisible to other users"
+   ],
+   "correct": 0,
+   "why": "Once committed, the changes persist even through failure."
+  },
+  {
+   "id": "pre3",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "T1 reads X; later T2 reads X. Do these operations conflict?",
+   "options": [
+    "No",
+    "Yes"
+   ],
+   "correct": 0,
+   "why": "Two reads of the same item do not conflict; no write is involved."
+  },
+  {
+   "id": "pre4",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "Which pair of operations conflicts?",
+   "options": [
+    "T1 reads X, then T2 writes X",
+    "T1 reads X, then T2 reads Y",
+    "T1 writes X, then T1 reads X"
+   ],
+   "correct": 0,
+   "why": "Different transactions, the same item, and at least one write. The last pair is one transaction, so it is not a conflict."
+  },
+  {
+   "id": "pre5",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "A schedule is conflict-serializable when its effect equals:",
+   "options": [
+    "Some serial execution of the same transactions",
+    "Any faster parallel execution",
+    "Running the transactions in reverse"
+   ],
+   "correct": 0,
+   "why": "The benchmark is equivalence to some one-after-another execution."
+  },
+  {
+   "id": "pre6",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "In the precedence graph, an edge from Ti to Tj means:",
+   "options": [
+    "An operation of Ti conflicts with a later operation of Tj",
+    "Ti and Tj are the same transaction",
+    "Tj must abort immediately"
+   ],
+   "correct": 0,
+   "why": "The edge records which transaction must come first in any equivalent serial order."
+  }
+ ],
+ "practice": [
+  {
+   "id": "practice1",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "Isolation means concurrent transactions do not observe each other's:",
+   "options": [
+    "Unfinished work",
+    "Committed results",
+    "Names"
+   ],
+   "correct": 0,
+   "why": "Half-done work stays invisible until commit."
+  },
+  {
+   "id": "practice2",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "T2 reads X; later, T1 writes X. Is there a conflict, and which way does the precedence edge run?",
+   "options": [
+    "Yes: T2 to T1",
+    "Yes: T1 to T2",
+    "No conflict"
+   ],
+   "correct": 0,
+   "why": "T2's read came first in the schedule, so the edge runs from T2 to T1."
+  },
+  {
+   "id": "practice3",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "The precedence graph contains a cycle. What does the conflict test conclude?",
+   "options": [
+    "No equivalent serial order exists under this test",
+    "The schedule is serializable",
+    "The transactions were read-only"
+   ],
+   "correct": 0,
+   "why": "A cycle means the conflicts cannot all be satisfied by any one-after-another order."
+  }
+ ],
+ "post": [
+  {
+   "id": "post1",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "Consistency, in ACID, means each committed transaction moves the data:",
+   "options": [
+    "From one valid state to another",
+    "To a backup server",
+    "Into main memory"
+   ],
+   "correct": 0,
+   "why": "Validity of the data is preserved across each committed transaction."
+  },
+  {
+   "id": "post2",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "A transfer debits account A but the system crashes before crediting B; after recovery, neither change took effect. Which guarantee is at work?",
+   "options": [
+    "Atomicity",
+    "Durability",
+    "Isolation"
+   ],
+   "correct": 0,
+   "why": "All of the writes or none: the partial transfer was rolled back."
+  },
+  {
+   "id": "post3",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "T1 writes X; later, T2 writes X. Is this a conflict?",
+   "options": [
+    "Yes: two writes on the same item",
+    "No: both operations are writes"
+   ],
+   "correct": 0,
+   "why": "Write-write pairs on the same item conflict; their order changes the final value."
+  },
+  {
+   "id": "post4",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "Why does the order of conflicting operations matter?",
+   "options": [
+    "Reordering them can change the final state or expose uncommitted values",
+    "Reads are slower than writes",
+    "Graphs cannot represent them"
+   ],
+   "correct": 0,
+   "why": "Conflicts are exactly the pairs whose order the schedule must preserve."
+  },
+  {
+   "id": "post5",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "The precedence graph is acyclic. A topological order of it gives:",
+   "options": [
+    "An equivalent serial order",
+    "The fastest possible schedule",
+    "A list of deadlocked transactions"
+   ],
+   "correct": 0,
+   "why": "Any topological order respects every conflict edge, so it is a valid serial equivalent."
+  },
+  {
+   "id": "post6",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "Schedule: T1 reads X, then T2 writes X, then T2 writes Y, then T1 reads Y. The precedence graph has:",
+   "options": [
+    "Edges in both directions: a cycle",
+    "One edge, T1 to T2",
+    "No edges"
+   ],
+   "correct": 0,
+   "why": "Item X gives T1 to T2; item Y gives T2 to T1. The loop means no serial equivalent."
+  }
+ ],
+ "recall": [
+  {
+   "id": "r1",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "Which ACID guarantee covers 'unfinished work is invisible to others'?",
+   "options": [
+    "Isolation",
+    "Atomicity",
+    "Durability"
+   ],
+   "correct": 0,
+   "why": "Isolation hides partial results until commit."
+  },
+  {
+   "id": "r2",
+   "concept": "acid",
+   "page": 1,
+   "prompt": "'All of the writes happen or none do' is:",
+   "options": [
+    "Atomicity",
+    "Consistency",
+    "Isolation"
+   ],
+   "correct": 0,
+   "why": "Atomicity treats the transaction as one indivisible unit."
+  },
+  {
+   "id": "r3",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "T1 reads X and T2 reads X, in either order. Conflict?",
+   "options": [
+    "No",
+    "Yes"
+   ],
+   "correct": 0,
+   "why": "Read-read pairs never conflict."
+  },
+  {
+   "id": "r4",
+   "concept": "conflicts",
+   "page": 2,
+   "prompt": "A conflict needs different transactions, the same item, and:",
+   "options": [
+    "At least one write",
+    "At least one read",
+    "Identical timestamps"
+   ],
+   "correct": 0,
+   "why": "Without a write, order cannot change any result."
+  },
+  {
+   "id": "r5",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "A cycle in the precedence graph means the schedule is:",
+   "options": [
+    "Not conflict-serializable",
+    "Serializable in one pass",
+    "Read-only"
+   ],
+   "correct": 0,
+   "why": "The conflict edges cannot all be respected by any serial order."
+  },
+  {
+   "id": "r6",
+   "concept": "serializability",
+   "page": 3,
+   "prompt": "If the precedence graph has no cycle, the schedule's effect equals:",
+   "options": [
+    "Some one-after-another execution of the same transactions",
+    "A random order",
+    "An empty schedule"
+   ],
+   "correct": 0,
+   "why": "Acyclic conflicts can always be unravelled into an equivalent serial order."
+  }
+ ],
+ "references": [
+  {
+   "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+   "title": "PostgreSQL documentation: Transaction Isolation",
+   "note": "Reference for isolation behaviour in a production database. Sample prose and questions are original."
+  }
+ ],
+ "limitations": [
+  "Original sample content, source-checked but not expert-reviewed.",
+  "Six items per assessment; two per concept. Forms match a blueprint but are not statistically equated.",
+  "Conflict serializability only: a sufficient, deliberately strict test. Locking, deadlock handling and database isolation levels are out of scope. No claim of lasting mastery or causal learning benefit."
+ ],
+ "short": "TRANSACTIONS"
+}
