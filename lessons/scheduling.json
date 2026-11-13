@@ -1,0 +1,348 @@
+{
+ "id": "cpu-scheduling-v1",
+ "title": "CPU scheduling: who runs next?",
+ "reviewed": true,
+ "mode": "Reviewed offline sample",
+ "version": "1.0.0",
+ "summary": "Turnaround vs waiting time, the convoy effect, shortest job first, and the round-robin quantum. For learners buried in scheduling jargon.",
+ "minutes": 25,
+ "lab": {
+  "type": "scheduling",
+  "intro": "A scheduling policy is a rule, not a mystery. Set the workload, predict the average waiting time, then run the policy and inspect every slice.",
+  "assumptions": "One CPU. No I/O: every job runs until it is done. Jobs are independent. Context switches cost nothing in this model (the notes explain why real switches are not free). Shortest job first is non-preemptive and knows exact burst lengths. Round robin re-queues a preempted job behind jobs that arrived during its slice."
+ },
+ "pages": [
+  {
+   "page": 1,
+   "text": "A scheduler decides which ready job uses the CPU next. Two measures describe the result. Turnaround time is the moment a job finishes minus the moment it arrived. Waiting time is turnaround minus the CPU time the job actually needed: the time it spent ready but not running. Average waiting time across all jobs is a common way to compare policies."
+  },
+  {
+   "page": 2,
+   "text": "First-come, first-served runs jobs in arrival order until each finishes. It is simple, but a long job at the front delays every job behind it: the convoy effect. Shortest job first runs the available job with the smallest CPU need next. For a fixed set of jobs it gives the lowest average waiting time, but it must know each job's length in advance, and a steady stream of short jobs can postpone a long job indefinitely."
+  },
+  {
+   "page": 3,
+   "text": "Round robin gives each ready job a fixed time slice, called a quantum, then moves to the next ready job. A very long quantum behaves like first-come, first-served, because every job finishes within its first slice. A very short quantum responds quickly but spends a larger share of CPU time on context switches. Choosing the quantum trades responsiveness against switching overhead."
+  }
+ ],
+ "concepts": [
+  {
+   "id": "metrics",
+   "title": "Turnaround and waiting time",
+   "page": 1,
+   "quote": "Turnaround time is the moment a job finishes minus the moment it arrived. Waiting time is turnaround minus the CPU time the job actually needed: the time it spent ready but not running.",
+   "plain": "Turnaround is the whole trip from arrival to finish. Waiting is only the part spent standing in the ready queue, not the part where the job is actually running.",
+   "example": "A job arrives at 0, needs 5 units, and runs from 3 to 8. Turnaround is 8 (finish minus arrival) and waiting is 3 (turnaround minus CPU need)."
+  },
+  {
+   "id": "policies",
+   "title": "First-come vs shortest-first",
+   "page": 2,
+   "quote": "a long job at the front delays every job behind it: the convoy effect. Shortest job first runs the available job with the smallest CPU need next. For a fixed set of jobs it gives the lowest average waiting time, but it must know each job's length in advance",
+   "plain": "Arrival order is fair like a shop queue, but one big order slows everyone behind it. Serving the smallest job first clears the queue fastest on average, yet needs to know sizes ahead of time and can leave a big job waiting forever.",
+   "example": "Jobs of 24, 3 and 3 arrive together. First-come order waits 0, 24 and 27 (average 17). Shortest-first waits 0, 3 and 6 (average 3). Try both in the lab."
+  },
+  {
+   "id": "preemption",
+   "title": "Round robin and the quantum",
+   "page": 3,
+   "quote": "A very long quantum behaves like first-come, first-served, because every job finishes within its first slice. A very short quantum responds quickly but spends a larger share of CPU time on context switches.",
+   "plain": "Round robin gives everyone a small turn in rotation, so nobody waits long for a first response. Slice too long and it is just a queue again. Slice too short and the CPU spends its time switching instead of working.",
+   "example": "Jobs of 24, 3 and 3 with a quantum of 4: the short jobs finish at 7 and 10 instead of waiting for the whole 24. The lab shows every slice."
+  }
+ ],
+ "pre": [
+  {
+   "id": "pre1",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "A job arrives at time 0, needs 8 units of CPU, and finishes at time 20. What is its turnaround time?",
+   "options": [
+    "8",
+    "12",
+    "20"
+   ],
+   "correct": 2,
+   "why": "Turnaround = completion - arrival = 20 - 0 = 20."
+  },
+  {
+   "id": "pre2",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "The same job (arrival 0, CPU need 8, finish 20): how long did it spend waiting?",
+   "options": [
+    "12",
+    "8",
+    "28"
+   ],
+   "correct": 0,
+   "why": "Waiting = turnaround - CPU need = 20 - 8 = 12 units ready but not running."
+  },
+  {
+   "id": "pre3",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "Jobs of lengths 24, 3 and 3 arrive together and run first-come, first-served in that order. What is the main weakness on show?",
+   "options": [
+    "The two short jobs wait behind the long one: the convoy effect",
+    "The CPU switches too often",
+    "The jobs arrive in the wrong order"
+   ],
+   "correct": 0,
+   "why": "A long job at the front delays every job queued behind it."
+  },
+  {
+   "id": "pre4",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "For a fixed set of jobs whose lengths are known, shortest job first gives:",
+   "options": [
+    "The lowest average waiting time",
+    "A guarantee that long jobs never wait long",
+    "Fewer context switches than first-come, first-served"
+   ],
+   "correct": 0,
+   "why": "SJF is optimal for average waiting on a fixed set; long jobs can still wait a very long time."
+  },
+  {
+   "id": "pre5",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "In round robin, making the quantum extremely long makes the policy behave like:",
+   "options": [
+    "Shortest job first",
+    "First-come, first-served",
+    "Optimal page replacement"
+   ],
+   "correct": 1,
+   "why": "A quantum longer than every job lets each job run to completion in arrival order."
+  },
+  {
+   "id": "pre6",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "Making the quantum extremely short mainly risks:",
+   "options": [
+    "A larger share of CPU time spent on context switches",
+    "Starvation of short jobs",
+    "More page faults"
+   ],
+   "correct": 0,
+   "why": "Every switch costs time; tiny slices multiply that overhead."
+  }
+ ],
+ "practice": [
+  {
+   "id": "practice1",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "A job arrives at time 4, needs 6 units of CPU, and finishes at time 15. Its waiting time is:",
+   "options": [
+    "5",
+    "11",
+    "9"
+   ],
+   "correct": 0,
+   "why": "Turnaround = 15 - 4 = 11; waiting = 11 - 6 = 5."
+  },
+  {
+   "id": "practice2",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "Short jobs keep arriving while a long job waits under shortest job first. What can happen to the long job?",
+   "options": [
+    "It can be postponed indefinitely: starvation",
+    "It is guaranteed to run next by rule",
+    "It is split into short jobs automatically"
+   ],
+   "correct": 0,
+   "why": "A steady stream of shorter jobs can keep a long job off the CPU; plain SJF has no aging rule."
+  },
+  {
+   "id": "practice3",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "Why does round robin improve response time for interactive jobs?",
+   "options": [
+    "Every ready job gets a turn within about one rotation",
+    "It predicts each job's length",
+    "It removes the ready queue"
+   ],
+   "correct": 0,
+   "why": "No job waits more than roughly one full rotation for its first slice."
+  }
+ ],
+ "post": [
+  {
+   "id": "post1",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "Job A: arrival 2, CPU need 5, completion 9. Turnaround time?",
+   "options": [
+    "7",
+    "4",
+    "11"
+   ],
+   "correct": 0,
+   "why": "Turnaround = 9 - 2 = 7."
+  },
+  {
+   "id": "post2",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "Job A again (arrival 2, need 5, completion 9). Waiting time?",
+   "options": [
+    "2",
+    "7",
+    "5"
+   ],
+   "correct": 0,
+   "why": "Turnaround 7 minus CPU need 5 = 2 units spent ready but not running."
+  },
+  {
+   "id": "post3",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "A 30-unit job arrives first, then three 1-unit jobs, all under first-come, first-served. Each short job waits at least:",
+   "options": [
+    "30 units, behind the long job",
+    "1 unit",
+    "Nothing; short jobs preempt"
+   ],
+   "correct": 0,
+   "why": "FCFS runs the long job to completion first: the convoy effect."
+  },
+  {
+   "id": "post4",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "What does shortest job first need that first-come, first-served does not?",
+   "options": [
+    "Advance knowledge of each job's CPU need",
+    "A longer quantum",
+    "More than one CPU"
+   ],
+   "correct": 0,
+   "why": "SJF must know or estimate burst lengths; FCFS only needs arrival order."
+  },
+  {
+   "id": "post5",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "A round-robin quantum so small that a context switch takes about as long as a slice would:",
+   "options": [
+    "Spend around half the CPU's time switching",
+    "Make the policy identical to shortest job first",
+    "Eliminate waiting time"
+   ],
+   "correct": 0,
+   "why": "The quantum trades responsiveness against switching overhead; tiny slices waste it."
+  },
+  {
+   "id": "post6",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "Round robin, quantum 2, jobs P1 (need 2) and P2 (need 2) arriving together. After 4 units of time:",
+   "options": [
+    "Both jobs have finished",
+    "Only P1 has finished",
+    "Neither job has run yet"
+   ],
+   "correct": 0,
+   "why": "P1 runs 0-2 and P2 runs 2-4; both fit in one quantum each."
+  }
+ ],
+ "recall": [
+  {
+   "id": "r1",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "Waiting time equals:",
+   "options": [
+    "Turnaround minus CPU need",
+    "Completion minus CPU need",
+    "Arrival minus completion"
+   ],
+   "correct": 0,
+   "why": "Waiting is the ready-but-not-running part: turnaround minus burst."
+  },
+  {
+   "id": "r2",
+   "concept": "metrics",
+   "page": 1,
+   "prompt": "A job with arrival 0 and CPU need 4 completes at time 4. Its waiting time is:",
+   "options": [
+    "0",
+    "4",
+    "8"
+   ],
+   "correct": 0,
+   "why": "Turnaround 4 - need 4 = 0: it ran immediately."
+  },
+  {
+   "id": "r3",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "The convoy effect is:",
+   "options": [
+    "Short jobs delayed behind one long job under first-come, first-served",
+    "Jobs sharing the CPU equally",
+    "A fault in round robin"
+   ],
+   "correct": 0,
+   "why": "One long job at the head of the queue delays everything behind it."
+  },
+  {
+   "id": "r4",
+   "concept": "policies",
+   "page": 2,
+   "prompt": "Which policy can leave a long job unscheduled while newer short jobs keep running?",
+   "options": [
+    "Shortest job first",
+    "First-come, first-served",
+    "Round robin with a fixed quantum"
+   ],
+   "correct": 0,
+   "why": "SJF always prefers a shorter available job; FCFS and round robin guarantee turns."
+  },
+  {
+   "id": "r5",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "The quantum in round robin is:",
+   "options": [
+    "The fixed time slice each job runs before rotation",
+    "The number of ready jobs",
+    "The time a job spends waiting"
+   ],
+   "correct": 0,
+   "why": "The quantum bounds each turn on the CPU."
+  },
+  {
+   "id": "r6",
+   "concept": "preemption",
+   "page": 3,
+   "prompt": "A real cost of choosing a very small quantum is:",
+   "options": [
+    "Context-switch overhead grows relative to useful work",
+    "Jobs can never finish",
+    "Average waiting time always drops to zero"
+   ],
+   "correct": 0,
+   "why": "Switching is not free; smaller slices mean more switches per unit of work."
+  }
+ ],
+ "references": [
+  {
+   "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-sched.pdf",
+   "title": "OSTEP: Scheduling: Introduction",
+   "note": "Reference for turnaround time, FCFS, SJF, round robin and the convoy effect. Sample prose and questions are original."
+  }
+ ],
+ "limitations": [
+  "Original sample content, source-checked but not expert-reviewed.",
+  "Six items per assessment; two per concept. Forms match a blueprint but are not statistically equated.",
+  "Uniprocessor model with no I/O and zero switch cost. Shortest job first knows exact lengths here; real systems estimate them. No claim of lasting mastery or causal learning benefit."
+ ],
+ "short": "CPU SCHEDULING"
+}
