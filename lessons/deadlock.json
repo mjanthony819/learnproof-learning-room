@@ -1,0 +1,344 @@
+{
+ "id": "deadlock-v2",
+ "title": "Deadlocks, without the guesswork",
+ "reviewed": true,
+ "mode": "Reviewed offline sample",
+ "pages": [
+  {
+   "page": 1,
+   "text": "A deadlock is a state in which a set of threads cannot proceed because each waits for a resource held by another in the set. Four necessary conditions are mutual exclusion, hold-and-wait, no preemption and circular wait. Removing any one condition prevents this kind of deadlock."
+  },
+  {
+   "page": 2,
+   "text": "Suppose there is exactly one instance of each resource. Thread A holds lock X and requests Y. Thread B holds Y and requests X. Neither releases its held lock until it obtains the other. Both remain blocked. A cycle does not always imply deadlock when a resource has multiple instances."
+  },
+  {
+   "page": 3,
+   "text": "Deadlock prevention disallows at least one necessary condition by design. For example, all threads acquire X before Y, preventing a circular wait between these two locks. Avoidance instead examines proposed allocations and grants only those that preserve a safe completion sequence. Prevention and avoidance are different strategies."
+  }
+ ],
+ "concepts": [
+  {
+   "id": "conditions",
+   "title": "The four conditions",
+   "page": 1,
+   "quote": "A deadlock is a state in which a set of threads cannot proceed because each waits for a resource held by another in the set. Four necessary conditions are mutual exclusion, hold-and-wait, no preemption and circular wait. Removing any one condition prevents this kind of deadlock.",
+   "plain": "Imagine two people each holding one key and waiting for the other key. A deadlock needs exclusive resources, holding while waiting, no forced taking-away, and a waiting loop. Remove one ingredient and this deadlock cannot form.",
+   "example": "If a thread must obtain all required locks together, it cannot hold one lock while waiting for another: hold-and-wait is removed."
+  },
+  {
+   "id": "cycle",
+   "title": "Spot the waiting loop",
+   "page": 2,
+   "quote": "Suppose there is exactly one instance of each resource. Thread A holds lock X and requests Y. Thread B holds Y and requests X. Neither releases its held lock until it obtains the other. Both remain blocked. A cycle does not always imply deadlock when a resource has multiple instances.",
+   "plain": "Follow who is waiting for whom. A waits for B, and B waits for A. In our examples every lock has one instance and a blocked thread does not release its lock. Both wait forever unless something outside changes the state.",
+   "example": "A holds X -> waits for Y held by B -> B waits for X held by A. The arrow loop is the evidence. With multiple interchangeable instances, a cycle alone is not enough."
+  },
+  {
+   "id": "strategy",
+   "title": "Prevent or avoid?",
+   "page": 3,
+   "quote": "Deadlock prevention disallows at least one necessary condition by design. For example, all threads acquire X before Y, preventing a circular wait between these two locks. Avoidance instead examines proposed allocations and grants only those that preserve a safe completion sequence. Prevention and avoidance are different strategies.",
+   "plain": "Prevention changes the rules so a necessary ingredient cannot happen. Avoidance checks a particular allocation before allowing it, making sure all threads could still finish in some order.",
+   "example": "Always take X before Y = prevention. Simulate an allocation and check a safe finishing order = avoidance."
+  }
+ ],
+ "pre": [
+  {
+   "id": "pre1",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A thread holds a printer while waiting for a scanner. Which condition is illustrated?",
+   "options": [
+    "No preemption",
+    "Hold-and-wait",
+    "Circular wait"
+   ],
+   "correct": 1,
+   "why": "It keeps one resource while waiting for another."
+  },
+  {
+   "id": "pre2",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "Which change rules out one necessary deadlock condition?",
+   "options": [
+    "Require all needed locks to be obtained together",
+    "Give threads longer names",
+    "Increase the waiting timeout without releasing locks"
+   ],
+   "correct": 0,
+   "why": "Obtaining all locks together removes hold-and-wait."
+  },
+  {
+   "id": "pre3",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "One instance each: A holds X and waits for Y; B holds Y and waits for X. Neither releases while blocked. What follows?",
+   "options": [
+    "A can finish immediately",
+    "Both are deadlocked",
+    "There is not enough information because the locks have names"
+   ],
+   "correct": 1,
+   "why": "The two held locks and circular waiting leave neither thread able to proceed."
+  },
+  {
+   "id": "pre4",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "A waiting cycle with several interchangeable instances per resource proves deadlock. Is this always true?",
+   "options": [
+    "Yes",
+    "No"
+   ],
+   "correct": 1,
+   "why": "With multiple instances, a cycle is not sufficient by itself."
+  },
+  {
+   "id": "pre5",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "Every thread must acquire X before Y. This is:",
+   "options": [
+    "Prevention",
+    "Avoidance via safe-state testing",
+    "Neither"
+   ],
+   "correct": 0,
+   "why": "A fixed lock order prevents circular wait."
+  },
+  {
+   "id": "pre6",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "Checking whether an allocation leaves a safe completion order is:",
+   "options": [
+    "Prevention by lock naming",
+    "Avoidance",
+    "Ignoring deadlock"
+   ],
+   "correct": 1,
+   "why": "Avoidance checks the safety of an allocation."
+  }
+ ],
+ "practice": [
+  {
+   "id": "practice1",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A lock can be forcibly reclaimed. Which necessary condition is broken?",
+   "options": [
+    "No preemption",
+    "Hold-and-wait",
+    "Circular wait"
+   ],
+   "correct": 0,
+   "why": "Forced reclamation breaks no preemption."
+  },
+  {
+   "id": "practice2",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "Single-instance locks: E owns P and wants Q; F owns Q but needs nothing else. Is deadlock established?",
+   "options": [
+    "Yes",
+    "No"
+   ],
+   "correct": 1,
+   "why": "F can finish and release Q, so there is no closed waiting loop."
+  },
+  {
+   "id": "practice3",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "Why can a universal lock order help?",
+   "options": [
+    "It prevents a circular waiting order",
+    "It makes every request faster",
+    "It removes the need for testing"
+   ],
+   "correct": 0,
+   "why": "An agreed acquisition order prevents circular wait; it does not guarantee speed."
+  }
+ ],
+ "post": [
+  {
+   "id": "post1",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A task retains a database lock while requesting a file lock. Name the condition.",
+   "options": [
+    "Mutual exclusion only",
+    "Hold-and-wait",
+    "No waiting"
+   ],
+   "correct": 1,
+   "why": "A retained resource plus a pending request illustrates hold-and-wait."
+  },
+  {
+   "id": "post2",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A system permits a task to request resources only when it holds none. What does this remove?",
+   "options": [
+    "Hold-and-wait",
+    "Every possible resource",
+    "All concurrency"
+   ],
+   "correct": 0,
+   "why": "It cannot hold a resource while requesting another."
+  },
+  {
+   "id": "post3",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "Single-instance locks: C holds M and waits for N; D holds N and waits for M. No forced release is possible. What is the state?",
+   "options": [
+    "Both deadlocked",
+    "Both finished",
+    "C can acquire N now"
+   ],
+   "correct": 0,
+   "why": "Each waits for the only instance held by the other."
+  },
+  {
+   "id": "post4",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "A graph cycle involves resource types with multiple instances. What can you conclude from the cycle alone?",
+   "options": [
+    "Deadlock is certain",
+    "Deadlock needs more analysis"
+   ],
+   "correct": 1,
+   "why": "A cycle alone is insufficient when a resource has multiple instances."
+  },
+  {
+   "id": "post5",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "All workers request lock A before lock B. Which strategy is used?",
+   "options": [
+    "Avoidance using a safe sequence",
+    "Prevention by ordering",
+    "Detection after deadlock"
+   ],
+   "correct": 1,
+   "why": "The ordering rule removes circular wait."
+  },
+  {
+   "id": "post6",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "Before granting a request, simulate whether all workers can still finish in some order. This is:",
+   "options": [
+    "Avoidance",
+    "Prevention by removing all locks",
+    "A guarantee that performance improves"
+   ],
+   "correct": 0,
+   "why": "Safe-state checking is avoidance, not a claim about performance."
+  }
+ ],
+ "references": [
+  {
+   "url": "https://pages.cs.wisc.edu/~remzi/OSFEP/threads-deadlock.pdf",
+   "title": "OSTEP: Common Concurrency Problems",
+   "note": "Reference for four necessary conditions and lock ordering. Sample prose and questions are original."
+  }
+ ],
+ "limitations": [
+  "Original sample content, source-checked but not expert-reviewed.",
+  "Six items per assessment; two per concept. Forms match a blueprint but are not statistically equated.",
+  "Single-instance resource examples only. No claim of lasting mastery or causal learning benefit."
+ ],
+ "version": "2.0.0",
+ "recall": [
+  {
+   "id": "r1",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A task can have its resource forcibly taken away. Which necessary condition no longer holds?",
+   "options": [
+    "No preemption",
+    "Circular wait",
+    "Mutual exclusion"
+   ],
+   "correct": 0,
+   "why": "No preemption means resources cannot be forcibly taken. This system permits that."
+  },
+  {
+   "id": "r2",
+   "concept": "conditions",
+   "page": 1,
+   "prompt": "A service can request another lock only after it releases every lock it owns. Which condition does this rule remove?",
+   "options": [
+    "Mutual exclusion",
+    "Hold-and-wait",
+    "No preemption"
+   ],
+   "correct": 1,
+   "why": "The service cannot hold one resource while waiting for another."
+  },
+  {
+   "id": "r3",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "One copy each: T owns R, waits for S; U owns S, waits for R. Both keep their locks and requests block. What follows?",
+   "options": [
+    "Both can finish now",
+    "They are deadlocked",
+    "U owns both locks"
+   ],
+   "correct": 1,
+   "why": "The closed wait cycle leaves neither thread with a way to proceed."
+  },
+  {
+   "id": "r4",
+   "concept": "cycle",
+   "page": 2,
+   "prompt": "T waits for a lock owned by U. U needs no further locks and can finish. Is a closed deadlock cycle established?",
+   "options": [
+    "Yes",
+    "No"
+   ],
+   "correct": 1,
+   "why": "U can finish and release the lock, allowing T to continue. A wait is not by itself a cycle."
+  },
+  {
+   "id": "r5",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "Every worker must use the same increasing lock order. What does this prevent?",
+   "options": [
+    "Circular wait",
+    "All waiting",
+    "All scheduling delays"
+   ],
+   "correct": 0,
+   "why": "A universal acquisition order prevents circular wait, not every wait or delay."
+  },
+  {
+   "id": "r6",
+   "concept": "strategy",
+   "page": 3,
+   "prompt": "A scheduler tentatively allocates resources and searches for an order in which all tasks can finish. Which strategy is this?",
+   "options": [
+    "Recovery after a crash",
+    "Avoidance",
+    "Prevention by removing all resource sharing"
+   ],
+   "correct": 1,
+   "why": "Checking the safety of a proposed allocation is avoidance."
+  }
+ ],
+ "lab": {
+  "type": "deadlock",
+  "intro": "A wait is not always a deadlock. Build a state, predict whether a closed cycle exists, then inspect the reasoning.",
+  "assumptions": "One instance per lock; non-reentrant locks; blocking requests; each thread has at most one pending request. Threads keep held locks while blocked. A thread with no blocker can finish and release its locks. This is not a general Banker's-algorithm simulator."
+ },
+ "summary": "The four conditions, waiting cycles, and prevention vs avoidance. For learners who get stuck on dense concurrency notes.",
+ "minutes": 25,
+ "short": "DEADLOCKS"
+}
