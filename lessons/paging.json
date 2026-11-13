@@ -1,0 +1,348 @@
+{
+ "id": "paging-v1",
+ "title": "Paging: which page leaves memory?",
+ "reviewed": true,
+ "mode": "Reviewed offline sample",
+ "version": "1.0.0",
+ "summary": "Demand paging, page faults, FIFO vs LRU, Belady's anomaly, and why the optimal policy is a benchmark. For learners who memorise policies without seeing them run.",
+ "minutes": 25,
+ "lab": {
+  "type": "paging",
+  "intro": "A reference string is a story of what a program touches. Choose the frames and the policy, predict the number of faults, then replay the story one reference at a time.",
+  "assumptions": "Demand paging only: no pre-loading. All pages are the same size, all frames are equal, and every frame starts empty. A reference to a resident page is a hit and changes nothing except LRU bookkeeping. OPT looks at the actual future of the string you typed; it is a benchmark, not an implementable policy."
+ },
+ "pages": [
+  {
+   "page": 1,
+   "text": "Demand paging keeps each process's memory in fixed-size pages and loads a page into a free frame only when it is referenced. If the referenced page is not in memory, a page fault occurs and the operating system brings it in from disk. When every frame is occupied, one resident page must be evicted to make room. The choice of victim is the replacement policy."
+  },
+  {
+   "page": 2,
+   "text": "First-in, first-out evicts the page that has been resident longest. It is cheap to track, but it can evict a page that is still in active use. With certain reference strings, adding frames can even increase the number of faults, an outcome called Belady's anomaly. Least-recently-used evicts the page whose last reference is furthest in the past, betting that recent use predicts future use. LRU needs bookkeeping on every reference, not only on faults."
+  },
+  {
+   "page": 3,
+   "text": "The optimal policy evicts the page whose next use is furthest in the future. It produces the fewest possible faults for a given reference string, but it requires knowledge of the future, so no real system can implement it. It serves as a benchmark: a practical policy is judged by how close its fault count comes to optimal. Programs that loop over a small working set show strong locality and fault rarely after warm-up."
+  }
+ ],
+ "concepts": [
+  {
+   "id": "paging",
+   "title": "Pages, frames and faults",
+   "page": 1,
+   "quote": "If the referenced page is not in memory, a page fault occurs and the operating system brings it in from disk. When every frame is occupied, one resident page must be evicted to make room.",
+   "plain": "Memory holds a few fixed-size pages at a time. Touch a page that is not loaded and the system pauses to fetch it. If there is no free slot, something already inside has to leave.",
+   "example": "With 2 frames, the string 1, 2, 1 faults twice: page 1 loads, page 2 loads, and the second 1 is already there, so it is a hit."
+  },
+  {
+   "id": "replacement",
+   "title": "FIFO and LRU",
+   "page": 2,
+   "quote": "First-in, first-out evicts the page that has been resident longest. It is cheap to track, but it can evict a page that is still in active use.",
+   "plain": "FIFO throws out the longest-resident page even if everyone still needs it. LRU throws out the page untouched for the longest time, guessing that what you used recently you will use again.",
+   "example": "Frames hold 1 and 2, loaded in that order, and page 3 arrives. FIFO evicts 1. If page 1 was just referenced, LRU evicts 2 instead."
+  },
+  {
+   "id": "benchmark",
+   "title": "Optimal as a measuring stick",
+   "page": 3,
+   "quote": "It produces the fewest possible faults for a given reference string, but it requires knowledge of the future, so no real system can implement it. It serves as a benchmark",
+   "plain": "The optimal policy cheats: it looks ahead and evicts whatever is needed furthest from now. Nobody can build it, but its fault count tells you how good a real policy can possibly get.",
+   "example": "On the classic string 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 with 3 frames: FIFO faults 9 times, LRU 10, optimal 7. The lab lets you replay it."
+  }
+ ],
+ "pre": [
+  {
+   "id": "pre1",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "Under demand paging, when is a page brought into memory?",
+   "options": [
+    "Only when it is referenced and not already resident",
+    "All pages load when the program starts",
+    "Only after a system crash"
+   ],
+   "correct": 0,
+   "why": "Demand paging loads on first reference, not in advance."
+  },
+  {
+   "id": "pre2",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "A page fault means:",
+   "options": [
+    "The referenced page is not currently in a frame",
+    "The disk has physically failed",
+    "The program divided by zero"
+   ],
+   "correct": 0,
+   "why": "A fault is simply a missing page; the OS fetches it from disk."
+  },
+  {
+   "id": "pre3",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "First-in, first-out replacement evicts:",
+   "options": [
+    "The page that has been resident longest",
+    "The page used least recently",
+    "The largest page"
+   ],
+   "correct": 0,
+   "why": "FIFO removes the page that was loaded earliest."
+  },
+  {
+   "id": "pre4",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "Belady's anomaly is the observation that under FIFO:",
+   "options": [
+    "More frames can sometimes mean more faults",
+    "FIFO is always the best policy",
+    "Faults are impossible with enough frames"
+   ],
+   "correct": 0,
+   "why": "Certain reference strings fault more when given extra frames under FIFO."
+  },
+  {
+   "id": "pre5",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "The optimal replacement policy evicts the page:",
+   "options": [
+    "Whose next use is furthest in the future",
+    "That was loaded earliest",
+    "That is used most often overall"
+   ],
+   "correct": 0,
+   "why": "OPT looks forward in the reference string, which is exactly why it cannot be implemented."
+  },
+  {
+   "id": "pre6",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "Why can no real system implement optimal replacement?",
+   "options": [
+    "It requires knowing future references",
+    "It needs too many frames",
+    "Disks are too slow to allow it"
+   ],
+   "correct": 0,
+   "why": "OPT needs future knowledge, so it serves as a benchmark instead."
+  }
+ ],
+ "practice": [
+  {
+   "id": "practice1",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "Every frame is occupied and a page fault occurs. What must happen first?",
+   "options": [
+    "One resident page is evicted to make room",
+    "The process is always terminated",
+    "The disk is reformatted"
+   ],
+   "correct": 0,
+   "why": "A victim is chosen by the replacement policy to free a frame."
+  },
+  {
+   "id": "practice2",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "Least-recently-used evicts the page whose:",
+   "options": [
+    "Last reference is furthest in the past",
+    "Next reference is furthest in the future",
+    "Size is largest"
+   ],
+   "correct": 0,
+   "why": "LRU bets that recent use predicts future use."
+  },
+  {
+   "id": "practice3",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "A program loops over a small set of pages that fits in the frames. After warm-up it should fault:",
+   "options": [
+    "Rarely, because of locality",
+    "On every reference",
+    "Exactly once per loop forever"
+   ],
+   "correct": 0,
+   "why": "A small working set stays resident, so most references hit."
+  }
+ ],
+ "post": [
+  {
+   "id": "post1",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "Reference string 1, 2, 1 with 2 frames, starting empty. How many page faults?",
+   "options": [
+    "2",
+    "3",
+    "1"
+   ],
+   "correct": 0,
+   "why": "1 faults and loads, 2 faults and loads, then the second 1 hits."
+  },
+  {
+   "id": "post2",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "What does the replacement policy decide?",
+   "options": [
+    "Which resident page to evict when a free frame is needed",
+    "How large each page is",
+    "Which program runs next on the CPU"
+   ],
+   "correct": 0,
+   "why": "The policy picks the victim page; size and scheduling are separate questions."
+  },
+  {
+   "id": "post3",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "References 1, 2, 3 with 2 frames under FIFO. When page 3 is referenced:",
+   "options": [
+    "Page 1 is evicted",
+    "Page 2 is evicted",
+    "No eviction happens"
+   ],
+   "correct": 0,
+   "why": "1 was loaded first, so FIFO removes it to make room for 3."
+  },
+  {
+   "id": "post4",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "Why does LRU need more bookkeeping than FIFO?",
+   "options": [
+    "It must update usage order on every reference, not only on faults",
+    "It must predict the future",
+    "It needs two disks"
+   ],
+   "correct": 0,
+   "why": "FIFO only records load order; LRU re-orders on every single reference."
+  },
+  {
+   "id": "post5",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "Optimal faults 4 times on a string while LRU faults 7. What does that comparison tell you?",
+   "options": [
+    "LRU comes within 3 faults of the best possible on this string",
+    "LRU is implemented incorrectly",
+    "Optimal should be deployed in production"
+   ],
+   "correct": 0,
+   "why": "OPT is the lower bound used to judge practical policies, not a deployable policy."
+  },
+  {
+   "id": "post6",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "A working set that fits in the available frames means:",
+   "options": [
+    "The loop's pages can stay resident, so faults are rare",
+    "Every page faults once per loop",
+    "The program needs no memory"
+   ],
+   "correct": 0,
+   "why": "Locality keeps the active pages in memory after warm-up."
+  }
+ ],
+ "recall": [
+  {
+   "id": "r1",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "A page fault occurs when a referenced page is:",
+   "options": [
+    "Not in any frame",
+    "In two frames at once",
+    "Currently on the CPU"
+   ],
+   "correct": 0,
+   "why": "A fault simply means the page is missing from memory."
+  },
+  {
+   "id": "r2",
+   "concept": "paging",
+   "page": 1,
+   "prompt": "The fixed-size chunks a process's memory is divided into are called:",
+   "options": [
+    "Pages",
+    "Quanta",
+    "Transactions"
+   ],
+   "correct": 0,
+   "why": "Pages are loaded into same-sized frames in physical memory."
+  },
+  {
+   "id": "r3",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "Which policy is the classic victim of Belady's anomaly?",
+   "options": [
+    "FIFO",
+    "Optimal",
+    "Least-recently-used"
+   ],
+   "correct": 0,
+   "why": "The anomaly is a known FIFO property; LRU and optimal are stack policies and do not suffer it."
+  },
+  {
+   "id": "r4",
+   "concept": "replacement",
+   "page": 2,
+   "prompt": "LRU chooses as its victim the page:",
+   "options": [
+    "Not referenced for the longest time",
+    "Loaded most recently",
+    "With the highest page number"
+   ],
+   "correct": 0,
+   "why": "Least-recently-used looks backwards, not at load time or page numbers."
+  },
+  {
+   "id": "r5",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "The optimal policy is best understood as:",
+   "options": [
+    "A benchmark that requires future knowledge",
+    "The fastest policy to compute",
+    "The policy every operating system ships"
+   ],
+   "correct": 0,
+   "why": "Its value is measuring how close real policies get to the best possible fault count."
+  },
+  {
+   "id": "r6",
+   "concept": "benchmark",
+   "page": 3,
+   "prompt": "Strong locality means a program:",
+   "options": [
+    "References a small set of pages repeatedly",
+    "Touches every page exactly once",
+    "Never faults on its first reference"
+   ],
+   "correct": 0,
+   "why": "Repeated use of a small working set is what keeps fault counts low."
+  }
+ ],
+ "references": [
+  {
+   "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/vmm-beyondphys-policy.pdf",
+   "title": "OSTEP: Beyond Physical Memory: Policies",
+   "note": "Reference for FIFO, LRU, optimal replacement, Belady's anomaly and locality. Sample prose and questions are original."
+  }
+ ],
+ "limitations": [
+  "Original sample content, source-checked but not expert-reviewed.",
+  "Six items per assessment; two per concept. Forms match a blueprint but are not statistically equated.",
+  "Pure demand paging with equal pages and empty starting frames. No claim of lasting mastery or causal learning benefit."
+ ],
+ "short": "PAGING"
+}
